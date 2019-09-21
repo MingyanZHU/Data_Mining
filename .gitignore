@@ -102,3 +102,9 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+
+# Lab 1 data
+user_artist_data.txt
+artist_data.txt
+artist_alias.txt
