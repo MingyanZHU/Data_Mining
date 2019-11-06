@@ -41,15 +41,15 @@ $$
 
 具体的实现示例，`map<int, map<int, int> > M`, 我们存储了两个这样的数据结构: 
 
-第一个map<int, map<int, int> >中, 外层map的key位置存储的是矩阵中元素的行, 内层map的key位置存储的是矩阵中元素的列, 
+第一个`map<int, map<int, int> >`中, 外层map的key位置存储的是矩阵中元素的行, 内层map的key位置存储的是矩阵中元素的列, 
 内层map的value位置存储的是矩阵中对应位置的元素值;
 
-第二个map<int, map<int, int> >中, 外层map的key位置存储的是矩阵中元素的列, 内层map的key位置存储的是矩阵中元素的行, 
+第二个`map<int, map<int, int> >`中, 外层map的key位置存储的是矩阵中元素的列, 内层map的key位置存储的是矩阵中元素的行, 
 内层map的value位置存储的是矩阵中对应位置的元素值;
 
-其实仅存储一个这样的map<int, map<int, int> >便可以实现所需要的功能, 存储两个其实是出于用空间换时间这样一个目的: 
+其实仅存储一个这样的`map<int, map<int, int> >`便可以实现所需要的功能, 存储两个其实是出于用空间换时间这样一个目的: 
 更新U和V矩阵时, 我们需要代入第一种方式中提到的公式, 其中更新U矩阵中元素时, 我们需要在训练数据"矩阵"M中寻找某一行, 
-而更新V矩阵中元素时, 我们需要在"矩阵"中寻找某一列, 所以我们采用了存储两个这样的 map<int, map<int, int> >, 来加速
+而更新V矩阵中元素时, 我们需要在"矩阵"中寻找某一列, 所以我们采用了存储两个这样的 `map<int, map<int, int> >`, 来加速
 更新U和V矩阵时对训练数据的查找过程.
 
 源文件为`Lab-1-server.cpp`。
@@ -67,7 +67,29 @@ $$
 实现方式进行。源文件为服务器上的`/UnderG/zhumingyan/DM/main.cpp`。
 
 关于GD算法原理:
-<!-- TODO -->
+
+首先定义损失函数，这里使用训练数据矩阵M与重新构建的`UV`矩阵之间误差的平方作为损失函数：
+
+$$e_{i j}^{2}=\left(r_{i j}-\hat{r}_{i j}\right)^{2}=\left(r_{i j}-\sum_{k=1}^{K} p_{i k} q_{k j}\right)$$
+
+最终我们需要求解所有的非0项的损失函数之和的最小值：
+
+$$
+\min \operatorname{loss}=\sum_{r_{i j} \neq 0} e_{i j}^{2}
+$$
+
+对该损失函数的求解：对于上述的平方损失函数，我们通过梯度下降法求解，梯度下降法的核心步骤为：
+1. 求解损失函数的负梯度：
+   
+$$
+\begin{array}{l}{\frac{\partial}{\partial p_{i k}} e_{i j}^{2}=-2\left(r_{i j}-\sum_{k=1}^{K} p_{i k} q_{k j}\right) q_{k j}=-2 e_{i j} q_{k j}} \\ {\frac{\partial}{\partial q_{i k}} e_{i j}^{2}=-2\left(r_{i j}-\sum_{k=1}^{K} p_{i k} q_{k j}\right) p_{i k}=-2 e_{i j} p_{i k}^{j}}\end{array}
+$$
+
+2. 根据负梯度的方向更新变量：
+   
+$$
+\begin{array}{l}{p_{i k}^{\prime}=p_{i k}-\alpha \frac{\partial}{\partial p_{i k}} e_{i j}^{2}-lamda*p_{i k}=p_{i k}+2 e_{i j} q_{k j}}-lamda*p_{i k} \\ {q_{k j}^{\prime}=q_{k j}-\alpha \frac{\partial}{\partial q_{k j}} e_{i j}^{2}-lamda*q_{k j}=q_{k j}+2 e_{i j} p_{i k}}-landa*q_{k j}\end{array}
+$$
 
 在实现时, 采用了和ALS相似的方式, 只不过是在每轮迭代更新U和V矩阵时, 有两点不同的地方: 
 
@@ -258,11 +280,158 @@ lamda = 0.1, lr = 1e-06
 170 70.9231, 120.095
 ```
 
+```txt
+d = 15
+Initial RSME: 165.588, 85.4828
+1, Current RSME: 165.578, 85.47
+2, Current RSME: 165.566, 85.4559
+3, Current RSME: 165.551, 85.4408
+4, Current RSME: 165.532, 85.4248
+5, Current RSME: 165.506, 85.4077
+6, Current RSME: 165.472, 85.39
+7, Current RSME: 165.424, 85.3727
+8, Current RSME: 165.358, 85.3594
+9, Current RSME: 165.271, 85.3588
+10, Current RSME: 165.165, 85.388
+11, Current RSME: 165.055, 85.4651
+12, Current RSME: 164.968, 85.5709
+13, Current RSME: 164.919, 85.6353
+14, Current RSME: 164.898, 85.6428
+15, Current RSME: 164.888, 85.6314
+16, Current RSME: 164.879, 85.6171
+17, Current RSME: 164.872, 85.6025
+18, Current RSME: 164.864, 85.5881
+19, Current RSME: 164.856, 85.5738
+20, Current RSME: 164.848, 85.5597
+21, Current RSME: 164.84, 85.5457
+22, Current RSME: 164.833, 85.5319
+23, Current RSME: 164.825, 85.5183
+24, Current RSME: 164.817, 85.5049
+25, Current RSME: 164.81, 85.4917
+26, Current RSME: 164.802, 85.4787
+27, Current RSME: 164.795, 85.466
+28, Current RSME: 164.787, 85.4534
+29, Current RSME: 164.78, 85.4412
+30, Current RSME: 164.773, 85.4292
+31, Current RSME: 164.765, 85.4175
+32, Current RSME: 164.758, 85.4062
+33, Current RSME: 164.751, 85.3953
+34, Current RSME: 164.744, 85.3848
+35, Current RSME: 164.737, 85.3747
+36, Current RSME: 164.731, 85.365
+37, Current RSME: 164.724, 85.3558
+38, Current RSME: 164.718, 85.3471
+39, Current RSME: 164.712, 85.3388
+40, Current RSME: 164.706, 85.3309
+41, Current RSME: 164.7, 85.3234
+42, Current RSME: 164.694, 85.3161
+43, Current RSME: 164.689, 85.309
+44, Current RSME: 164.683, 85.302
+45, Current RSME: 164.678, 85.295
+46, Current RSME: 164.673, 85.2878
+47, Current RSME: 164.668, 85.2804
+48, Current RSME: 164.663, 85.2728
+49, Current RSME: 164.658, 85.2648
+50, Current RSME: 164.653, 85.2566
+51, Current RSME: 164.648, 85.248
+52, Current RSME: 164.643, 85.2392
+53, Current RSME: 164.639, 85.2302
+54, Current RSME: 164.634, 85.2209
+55, Current RSME: 164.629, 85.2115
+56, Current RSME: 164.625, 85.202
+57, Current RSME: 164.62, 85.1924
+58, Current RSME: 164.616, 85.1828
+59, Current RSME: 164.611, 85.1732
+60, Current RSME: 164.607, 85.1636
+61, Current RSME: 164.603, 85.1541
+62, Current RSME: 164.599, 85.1447
+63, Current RSME: 164.595, 85.1353
+64, Current RSME: 164.591, 85.1261
+65, Current RSME: 164.587, 85.117
+66, Current RSME: 164.583, 85.1081
+67, Current RSME: 164.58, 85.0993
+68, Current RSME: 164.576, 85.0908
+69, Current RSME: 164.573, 85.0823
+70, Current RSME: 164.57, 85.0741
+71, Current RSME: 164.567, 85.0662
+72, Current RSME: 164.564, 85.0584
+73, Current RSME: 164.561, 85.0508
+74, Current RSME: 164.558, 85.0435
+75, Current RSME: 164.556, 85.0364
+76, Current RSME: 164.553, 85.0296
+77, Current RSME: 164.551, 85.023
+78, Current RSME: 164.548, 85.0167
+79, Current RSME: 164.546, 85.0107
+80, Current RSME: 164.544, 85.0049
+81, Current RSME: 164.542, 84.9994
+82, Current RSME: 164.54, 84.9941
+83, Current RSME: 164.538, 84.9892
+84, Current RSME: 164.537, 84.9844
+85, Current RSME: 164.535, 84.98
+86, Current RSME: 164.533, 84.9758
+87, Current RSME: 164.532, 84.9719
+88, Current RSME: 164.531, 84.9682
+89, Current RSME: 164.529, 84.9647
+90, Current RSME: 164.528, 84.9615
+91, Current RSME: 164.527, 84.9586
+92, Current RSME: 164.526, 84.9558
+93, Current RSME: 164.525, 84.9533
+94, Current RSME: 164.524, 84.951
+95, Current RSME: 164.523, 84.9489
+96, Current RSME: 164.522, 84.9471
+97, Current RSME: 164.522, 84.9454
+98, Current RSME: 164.521, 84.9439
+99, Current RSME: 164.52, 84.9426
+100, Current RSME: 164.52, 84.9415
+101, Current RSME: 164.519, 84.9406
+102, Current RSME: 164.519, 84.9399
+103, Current RSME: 164.519, 84.9393
+104, Current RSME: 164.518, 84.9389
+105, Current RSME: 164.518, 84.9387
+106, Current RSME: 164.518, 84.9386
+107, Current RSME: 164.518, 84.9386
+108, Current RSME: 164.518, 84.9389
+109, Current RSME: 164.518, 84.9392
+110, Current RSME: 164.518, 84.9397
+111, Current RSME: 164.519, 84.9404
+112, Current RSME: 164.519, 84.9412
+113, Current RSME: 164.519, 84.9421
+114, Current RSME: 164.52, 84.9432
+115, Current RSME: 164.52, 84.9444
+116, Current RSME: 164.52, 84.9457
+117, Current RSME: 164.521, 84.9471
+118, Current RSME: 164.522, 84.9487
+119, Current RSME: 164.522, 84.9504
+120, Current RSME: 164.523, 84.9522
+121, Current RSME: 164.524, 84.9541
+122, Current RSME: 164.525, 84.9562
+123, Current RSME: 164.526, 84.9583
+124, Current RSME: 164.526, 84.9606
+125, Current RSME: 164.527, 84.963
+126, Current RSME: 164.528, 84.9654
+127, Current RSME: 164.53, 84.968
+128, Current RSME: 164.531, 84.9707
+129, Current RSME: 164.532, 84.9736
+130, Current RSME: 164.533, 84.9765
+```
 ### 关于第五种方式
 
 参考[斯坦福大学2015春季cme323课程的第14次笔记][lec14]的基本实现。
 
-结果不好,在测试集没有明显的下降
+相比第一和第二种方式中使用的矩阵元素更新公式，这里每次更新U矩阵的某一行，以及V矩阵的某一列，在时间复杂度上有了明显的下降，使用python编写，在合理的时间内可以迭代出结果。
+
+算法原理如下：
+
+在每一轮迭代过程中，U矩阵的某一行按下面的公式来更新： 
+
+$$x_{u}=\left(\sum_{r_{\text {uit} \in r_{u *}}} y_{i} y_{i}^{\top}+\lambda I_{k}\right)^{-1} \sum_{r_{\text {ui} \in r_{u *}}} r_{u i} y_{i}$$
+
+V矩阵的某一行按下面的公式来更新：
+$$
+y_{i}=\left(\sum_{r_{u i} \in r_{* i}} x_{u} x_{u}^{\top}+\lambda I_{k}\right)^{-1} \sum_{r_{u i} \in r_{* i}} r_{u i} x_{u}
+$$
+
+但是结果不好,在测试集没有明显的下降
 
 ```txt
 d=100
