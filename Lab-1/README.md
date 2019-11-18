@@ -180,6 +180,19 @@ $$
 [ lec14 ]: http://stanford.edu/~rezab/classes/cme323/S15/notes/lec14.pdf
 [ fastals ]: https://web.stanford.edu/~rezab/papers/fastals.pdf
 
+### 与spark中的ALS结果对比
+
+```txt
+所有的超参数均维持默认设置.
+d = 10, 均匀划分, RMSE=259.608
+d = 15, 数据随机划分, RMSE=171.286, 数据按照用户划分, RMSE=258.439
+d = 20, 数据按照用户划分, RMSE=273.960
+d = 30, 数据按照用户划分, RMSE=273.568
+d = 100, 数据按照用户划分, RMSE=273.582
+```
+
+相比第2种实现方式, 效果要好, 但其在d增大的时候, 没有按照预想的在测试数据上RMSE下降.
+并且将迭代的轮数增大, RMSE在测试集上的结果同样表现为上升, 这一点与我们的实现保持一致.
 ## 源文件介绍
 
 - `./PPT-example.txt` : PPT上5x5的例子, 数据格式为`i,j,v`。
